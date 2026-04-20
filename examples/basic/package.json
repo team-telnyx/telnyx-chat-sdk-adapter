@@ -1,0 +1,20 @@
+{
+  "name": "telnyx-adapter-example",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@telnyx/chat-sdk-adapter": "file:../../telnyx-chat-sdk-adapter-0.1.0.tgz",
+    "@chat-adapter/state-memory": "^4.20.0",
+    "chat": "^4.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.7.0"
+  }
+}
