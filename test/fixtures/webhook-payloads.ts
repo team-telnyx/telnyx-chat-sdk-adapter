@@ -10,9 +10,7 @@ export const mockLogger: Logger = {
   child: vi.fn().mockReturnThis(),
 };
 
-export function createMockChat(options?: {
-  userName?: string;
-}): ChatInstance {
+export function createMockChat(options?: { userName?: string }): ChatInstance {
   return {
     getLogger: vi.fn().mockReturnValue(mockLogger),
     getState: vi.fn(),

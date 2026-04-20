@@ -18,12 +18,7 @@ import type {
   WebhookOptions,
 } from "chat";
 import { ConsoleLogger, Message, NotImplementedError } from "chat";
-import {
-  ADAPTER_NAME,
-  ADAPTER_VERSION,
-  USER_AGENT,
-  buildTags,
-} from "./attribution";
+import { ADAPTER_NAME, ADAPTER_VERSION, buildTags, USER_AGENT } from "./attribution";
 import { TelnyxFormatConverter } from "./format-converter";
 import type {
   TelnyxAdapterConfig,
@@ -39,9 +34,7 @@ const SMS_MAX_LENGTH = 1600;
 const THREAD_ID_PATTERN = /^telnyx:(\+\d+):(\+\d+)$/;
 const TIMESTAMP_MAX_AGE_SECONDS = 300;
 
-export class TelnyxAdapter
-  implements Adapter<TelnyxThreadId, TelnyxRawMessage>
-{
+export class TelnyxAdapter implements Adapter<TelnyxThreadId, TelnyxRawMessage> {
   readonly name = "telnyx";
 
   private readonly apiKey: string;
@@ -101,13 +94,11 @@ export class TelnyxAdapter
     });
   }
 
-  async handleWebhook(
-    request: Request,
-    options?: WebhookOptions,
-  ): Promise<Response> {
+  async handleWebhook(request: Request, options?: WebhookOptions): Promise<Response> {
+    const rawBody = await request.text();
     let body: TelnyxWebhookPayload;
     try {
-      body = (await request.json()) as TelnyxWebhookPayload;
+      body = JSON.parse(rawBody) as TelnyxWebhookPayload;
     } catch {
       return new Response("Invalid JSON", { status: 400 });
     }
@@ -121,18 +112,11 @@ export class TelnyxAdapter
       }
 
       const now = Math.floor(Date.now() / 1000);
-      if (
-        Math.abs(now - Number.parseInt(timestamp, 10)) >
-        TIMESTAMP_MAX_AGE_SECONDS
-      ) {
+      if (Math.abs(now - Number.parseInt(timestamp, 10)) > TIMESTAMP_MAX_AGE_SECONDS) {
         return new Response("Stale timestamp", { status: 401 });
       }
 
-      const isValid = await this.verifySignature(
-        JSON.stringify(body),
-        signature,
-        timestamp,
-      );
+      const isValid = await this.verifySignature(rawBody, signature, timestamp);
 
       if (!isValid) {
         return new Response("Invalid signature", { status: 401 });
@@ -188,13 +172,8 @@ export class TelnyxAdapter
 
     const mediaUrls: string[] = [];
 
-    if (
-      typeof message === "object" &&
-      message !== null &&
-      "attachments" in message
-    ) {
-      const attachments = (message as { attachments?: Attachment[] })
-        .attachments;
+    if (typeof message === "object" && message !== null && "attachments" in message) {
+      const attachments = (message as { attachments?: Attachment[] }).attachments;
       if (attachments) {
         for (const att of attachments) {
           if (att.url) {
@@ -230,31 +209,13 @@ export class TelnyxAdapter
         );
       }
 
+      const detail = parseTelnyxError(errorBody) ?? `${response.status} ${errorBody}`;
+
       if (response.status === 401 || response.status === 403) {
-        throw new AuthenticationError("telnyx", `Auth failed: ${errorBody}`);
+        throw new AuthenticationError("telnyx", `Auth failed: ${detail}`);
       }
 
-      let errorMessage = `Failed to send message: ${response.status} ${errorBody}`;
-      try {
-        const errorJson = JSON.parse(errorBody) as {
-          errors?: { title?: string; detail?: string; code?: string }[];
-        };
-        const firstError = errorJson.errors?.[0];
-        if (firstError) {
-          const parts = [
-            firstError.title,
-            firstError.detail,
-            firstError.code,
-          ].filter(Boolean);
-          if (parts.length > 0) {
-            errorMessage = `Failed to send message: ${parts.join(" — ")}`;
-          }
-        }
-      } catch {
-        // Fall back to raw text
-      }
-
-      throw new NetworkError("telnyx", errorMessage);
+      throw new NetworkError("telnyx", `Failed to send message: ${detail}`);
     }
 
     const result = (await response.json()) as { data: TelnyxMessagePayload };
@@ -276,14 +237,12 @@ export class TelnyxAdapter
 
   parseMessage(raw: TelnyxRawMessage): Message<TelnyxRawMessage> {
     const text = raw.text ?? "";
-    const attachments: Attachment[] = (raw.media ?? []).map(
-      (media: TelnyxMedia) => ({
-        type: inferAttachmentType(media.content_type),
-        mimeType: media.content_type,
-        url: media.url,
-        size: media.size,
-      }),
-    );
+    const attachments: Attachment[] = (raw.media ?? []).map((media: TelnyxMedia) => ({
+      type: inferAttachmentType(media.content_type),
+      mimeType: media.content_type,
+      url: media.url,
+      size: media.size,
+    }));
 
     const fromNumber = raw.from.phone_number;
     const isMe = fromNumber === this.phoneNumber;
@@ -297,9 +256,7 @@ export class TelnyxAdapter
 
     const threadId = this.encodeThreadId({
       telnyxNumber: raw.to[0]?.phone_number ?? this.phoneNumber,
-      recipientNumber: isMe
-        ? (raw.to[0]?.phone_number ?? this.phoneNumber)
-        : fromNumber,
+      recipientNumber: isMe ? (raw.to[0]?.phone_number ?? this.phoneNumber) : fromNumber,
     });
 
     return new Message<TelnyxRawMessage>({
@@ -410,9 +367,9 @@ export class TelnyxAdapter
     timestamp: string,
   ): Promise<boolean> {
     try {
-      const publicKeyBytes = hexToUint8Array(this.publicKey as string);
+      const publicKeyBytes = decodePublicKey(this.publicKey as string);
       const signatureBytes = base64ToUint8Array(signature);
-      const messageBytes = new TextEncoder().encode(timestamp + payload);
+      const messageBytes = new TextEncoder().encode(`${timestamp}|${payload}`);
 
       const cryptoKey = await crypto.subtle.importKey(
         "raw",
@@ -422,12 +379,7 @@ export class TelnyxAdapter
         ["verify"],
       );
 
-      return await crypto.subtle.verify(
-        "Ed25519",
-        cryptoKey,
-        signatureBytes,
-        messageBytes,
-      );
+      return await crypto.subtle.verify("Ed25519", cryptoKey, signatureBytes, messageBytes);
     } catch (error) {
       this.logger.error("Signature verification failed", { error });
       return false;
@@ -442,6 +394,15 @@ function hexToUint8Array(hex: string): Uint8Array<ArrayBuffer> {
     bytes[i / 2] = Number.parseInt(hex.slice(i, i + 2), 16);
   }
   return bytes;
+}
+
+// Telnyx returns the webhook public key in base64 (~44 chars).
+// Accept hex too so keys copied from other docs just work.
+function decodePublicKey(key: string): Uint8Array<ArrayBuffer> {
+  if (/^[0-9a-fA-F]+$/.test(key) && key.length === 64) {
+    return hexToUint8Array(key);
+  }
+  return base64ToUint8Array(key);
 }
 
 function base64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
@@ -465,4 +426,20 @@ function inferAttachmentType(mimeType: string): Attachment["type"] {
     return "audio";
   }
   return "file";
+}
+
+function parseTelnyxError(errorBody: string): string | undefined {
+  try {
+    const json = JSON.parse(errorBody) as {
+      errors?: { title?: string; detail?: string; code?: string }[];
+    };
+    const first = json.errors?.[0];
+    if (!first) {
+      return undefined;
+    }
+    const parts = [first.title, first.detail, first.code].filter(Boolean);
+    return parts.length > 0 ? parts.join(" — ") : undefined;
+  } catch {
+    return undefined;
+  }
 }

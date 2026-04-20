@@ -1,10 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TelnyxAdapter } from "../src/adapter";
-import {
-  createMockChat,
-  mockLogger,
-  sampleWebhookPayload,
-} from "./fixtures/webhook-payloads";
+import { createMockChat, mockLogger, sampleWebhookPayload } from "./fixtures/webhook-payloads";
 
 const mockFetch = vi.fn<typeof fetch>();
 
@@ -67,8 +63,7 @@ describe("TelnyxAdapter", () => {
       const adapter = new TelnyxAdapter({
         apiKey: "test-key",
         phoneNumber: "+15559876543",
-        publicKey:
-          "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+        publicKey: "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
         logger: mockLogger,
       });
       const chat = createMockChat();
@@ -89,8 +84,7 @@ describe("TelnyxAdapter", () => {
       const adapter = new TelnyxAdapter({
         apiKey: "test-key",
         phoneNumber: "+15559876543",
-        publicKey:
-          "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+        publicKey: "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
         logger: mockLogger,
       });
       const chat = createMockChat();

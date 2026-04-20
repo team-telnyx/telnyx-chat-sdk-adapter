@@ -47,25 +47,17 @@ describe("attribution", () => {
     });
 
     it("builds the expected User-Agent string", () => {
-      expect(USER_AGENT).toBe(
-        "@telnyx/chat-sdk-adapter/0.1.0 (vercel-chat-sdk)",
-      );
+      expect(USER_AGENT).toBe("@telnyx/chat-sdk-adapter/0.1.0 (vercel-chat-sdk)");
     });
 
     it("defines the attribution tags", () => {
-      expect([...ATTRIBUTION_TAGS]).toEqual([
-        "vercel-chat-sdk",
-        "vercel-chat-sdk:0.1.0",
-      ]);
+      expect([...ATTRIBUTION_TAGS]).toEqual(["vercel-chat-sdk", "vercel-chat-sdk:0.1.0"]);
     });
   });
 
   describe("buildTags", () => {
     it("returns only attribution tags when no user tags and attribution enabled", () => {
-      expect(buildTags([], false)).toEqual([
-        "vercel-chat-sdk",
-        "vercel-chat-sdk:0.1.0",
-      ]);
+      expect(buildTags([], false)).toEqual(["vercel-chat-sdk", "vercel-chat-sdk:0.1.0"]);
     });
 
     it("returns empty array when attribution disabled and no user tags", () => {
@@ -102,10 +94,7 @@ describe("attribution", () => {
 
       const [, init] = mockFetch.mock.calls[0];
       const body = JSON.parse(init?.body as string);
-      expect(body.tags).toEqual([
-        "vercel-chat-sdk",
-        "vercel-chat-sdk:0.1.0",
-      ]);
+      expect(body.tags).toEqual(["vercel-chat-sdk", "vercel-chat-sdk:0.1.0"]);
     });
 
     it("merges extraTags with default attribution tags", async () => {
@@ -189,12 +178,8 @@ describe("attribution", () => {
       const [url, init] = mockFetch.mock.calls[0];
       expect(url).toBe("https://api.telnyx.com/v2/messages");
 
-      const headers = new Headers(
-        init?.headers as HeadersInit | undefined,
-      );
-      expect(headers.get("user-agent")).toBe(
-        "@telnyx/chat-sdk-adapter/0.1.0 (vercel-chat-sdk)",
-      );
+      const headers = new Headers(init?.headers as HeadersInit | undefined);
+      expect(headers.get("user-agent")).toBe("@telnyx/chat-sdk-adapter/0.1.0 (vercel-chat-sdk)");
     });
   });
 });

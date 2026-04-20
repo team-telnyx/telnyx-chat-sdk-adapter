@@ -1,8 +1,4 @@
-import {
-  AdapterRateLimitError,
-  AuthenticationError,
-  ValidationError,
-} from "@chat-adapter/shared";
+import { AdapterRateLimitError, AuthenticationError, ValidationError } from "@chat-adapter/shared";
 import { NotImplementedError } from "chat";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TelnyxAdapter } from "../src/adapter";
@@ -45,15 +41,11 @@ describe("TelnyxAdapter", () => {
     });
 
     it("throws if apiKey is missing", () => {
-      expect(() => new TelnyxAdapter({ phoneNumber: "+15550001111" })).toThrow(
-        ValidationError,
-      );
+      expect(() => new TelnyxAdapter({ phoneNumber: "+15550001111" })).toThrow(ValidationError);
     });
 
     it("throws if phoneNumber is missing", () => {
-      expect(() => new TelnyxAdapter({ apiKey: "test-key" })).toThrow(
-        ValidationError,
-      );
+      expect(() => new TelnyxAdapter({ apiKey: "test-key" })).toThrow(ValidationError);
     });
   });
 
@@ -94,10 +86,7 @@ describe("TelnyxAdapter", () => {
         ),
       );
 
-      const result = await adapter.postMessage(
-        "telnyx:+15559876543:+15551234567",
-        "Hello back",
-      );
+      const result = await adapter.postMessage("telnyx:+15559876543:+15551234567", "Hello back");
 
       expect(result.id).toBe("msg-456");
       expect(mockFetch).toHaveBeenCalledOnce();
@@ -194,13 +183,11 @@ describe("TelnyxAdapter", () => {
       const chat = createMockChat();
       await adapter.initialize(chat);
 
-      mockFetch.mockResolvedValueOnce(
-        new Response("Too Many Requests", { status: 429 }),
-      );
+      mockFetch.mockResolvedValueOnce(new Response("Too Many Requests", { status: 429 }));
 
-      await expect(
-        adapter.postMessage("telnyx:+15559876543:+15551234567", "test"),
-      ).rejects.toThrow(AdapterRateLimitError);
+      await expect(adapter.postMessage("telnyx:+15559876543:+15551234567", "test")).rejects.toThrow(
+        AdapterRateLimitError,
+      );
     });
 
     it("extracts retry-after from 429 response", async () => {
@@ -251,9 +238,9 @@ describe("TelnyxAdapter", () => {
         ),
       );
 
-      await expect(
-        adapter.postMessage("telnyx:+15559876543:+15551234567", "test"),
-      ).rejects.toThrow("Invalid destination");
+      await expect(adapter.postMessage("telnyx:+15559876543:+15551234567", "test")).rejects.toThrow(
+        "Invalid destination",
+      );
     });
 
     it("falls back to raw text for non-JSON error responses", async () => {
@@ -265,13 +252,11 @@ describe("TelnyxAdapter", () => {
       const chat = createMockChat();
       await adapter.initialize(chat);
 
-      mockFetch.mockResolvedValueOnce(
-        new Response("Internal Server Error", { status: 500 }),
-      );
+      mockFetch.mockResolvedValueOnce(new Response("Internal Server Error", { status: 500 }));
 
-      await expect(
-        adapter.postMessage("telnyx:+15559876543:+15551234567", "test"),
-      ).rejects.toThrow("Internal Server Error");
+      await expect(adapter.postMessage("telnyx:+15559876543:+15551234567", "test")).rejects.toThrow(
+        "Internal Server Error",
+      );
     });
 
     it("throws AuthenticationError on 401", async () => {
@@ -283,13 +268,11 @@ describe("TelnyxAdapter", () => {
       const chat = createMockChat();
       await adapter.initialize(chat);
 
-      mockFetch.mockResolvedValueOnce(
-        new Response("Unauthorized", { status: 401 }),
-      );
+      mockFetch.mockResolvedValueOnce(new Response("Unauthorized", { status: 401 }));
 
-      await expect(
-        adapter.postMessage("telnyx:+15559876543:+15551234567", "test"),
-      ).rejects.toThrow(AuthenticationError);
+      await expect(adapter.postMessage("telnyx:+15559876543:+15551234567", "test")).rejects.toThrow(
+        AuthenticationError,
+      );
     });
   });
 
@@ -300,9 +283,9 @@ describe("TelnyxAdapter", () => {
         phoneNumber: "+15559876543",
         logger: mockLogger,
       });
-      await expect(
-        adapter.editMessage("thread", "msg", "text"),
-      ).rejects.toThrow(NotImplementedError);
+      await expect(adapter.editMessage("thread", "msg", "text")).rejects.toThrow(
+        NotImplementedError,
+      );
     });
 
     it("deleteMessage throws NotImplementedError", async () => {
@@ -311,9 +294,7 @@ describe("TelnyxAdapter", () => {
         phoneNumber: "+15559876543",
         logger: mockLogger,
       });
-      await expect(adapter.deleteMessage("thread", "msg")).rejects.toThrow(
-        NotImplementedError,
-      );
+      await expect(adapter.deleteMessage("thread", "msg")).rejects.toThrow(NotImplementedError);
     });
 
     it("addReaction throws NotImplementedError", async () => {
@@ -322,9 +303,9 @@ describe("TelnyxAdapter", () => {
         phoneNumber: "+15559876543",
         logger: mockLogger,
       });
-      await expect(
-        adapter.addReaction("thread", "msg", "thumbsup"),
-      ).rejects.toThrow(NotImplementedError);
+      await expect(adapter.addReaction("thread", "msg", "thumbsup")).rejects.toThrow(
+        NotImplementedError,
+      );
     });
 
     it("removeReaction throws NotImplementedError", async () => {
@@ -333,9 +314,9 @@ describe("TelnyxAdapter", () => {
         phoneNumber: "+15559876543",
         logger: mockLogger,
       });
-      await expect(
-        adapter.removeReaction("thread", "msg", "thumbsup"),
-      ).rejects.toThrow(NotImplementedError);
+      await expect(adapter.removeReaction("thread", "msg", "thumbsup")).rejects.toThrow(
+        NotImplementedError,
+      );
     });
   });
 
@@ -386,9 +367,7 @@ describe("TelnyxAdapter", () => {
         phoneNumber: "+15559876543",
         logger: mockLogger,
       });
-      expect(() => adapter.decodeThreadId("telnyx:123:456")).toThrow(
-        ValidationError,
-      );
+      expect(() => adapter.decodeThreadId("telnyx:123:456")).toThrow(ValidationError);
     });
   });
 
@@ -531,9 +510,7 @@ describe("TelnyxAdapter", () => {
         phoneNumber: "+15559876543",
         logger: mockLogger,
       });
-      const info = await adapter.fetchThread(
-        "telnyx:+15559876543:+15551234567",
-      );
+      const info = await adapter.fetchThread("telnyx:+15559876543:+15551234567");
       expect(info.isDM).toBe(true);
       expect(info.metadata.recipientNumber).toBe("+15551234567");
     });
@@ -546,9 +523,7 @@ describe("TelnyxAdapter", () => {
         phoneNumber: "+15559876543",
         logger: mockLogger,
       });
-      const result = await adapter.fetchMessages(
-        "telnyx:+15559876543:+15551234567",
-      );
+      const result = await adapter.fetchMessages("telnyx:+15559876543:+15551234567");
       expect(result.messages).toEqual([]);
     });
   });

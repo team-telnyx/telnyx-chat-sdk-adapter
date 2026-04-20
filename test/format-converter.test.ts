@@ -19,9 +19,7 @@ describe("TelnyxFormatConverter", () => {
     });
 
     it("converts tables to ASCII", () => {
-      const ast = parseMarkdown(
-        "| Name | Value |\n| --- | --- |\n| a | 1 |\n| b | 2 |",
-      );
+      const ast = parseMarkdown("| Name | Value |\n| --- | --- |\n| a | 1 |\n| b | 2 |");
       const result = converter.fromAst(ast);
       expect(result).toContain("Name");
       expect(result).toContain("Value");

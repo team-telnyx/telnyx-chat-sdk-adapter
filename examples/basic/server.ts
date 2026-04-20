@@ -49,18 +49,14 @@ const chat = new Chat({
 
 // New inbound SMS — echo it back and subscribe so follow-ups route here too.
 chat.onNewMention(async (thread, message) => {
-  console.log(
-    `[new mention] from=${message.author.userId} text="${message.text}"`
-  );
+  console.log(`[new mention] from=${message.author.userId} text="${message.text}"`);
   await thread.subscribe();
   await thread.post(`Echo: ${message.text}`);
 });
 
 // Follow-up SMS in a subscribed thread.
 chat.onSubscribedMessage(async (thread, message) => {
-  console.log(
-    `[subscribed] from=${message.author.userId} text="${message.text}"`
-  );
+  console.log(`[subscribed] from=${message.author.userId} text="${message.text}"`);
   await thread.post(`Echo: ${message.text}`);
 });
 
