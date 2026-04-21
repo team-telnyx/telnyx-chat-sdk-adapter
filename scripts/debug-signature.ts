@@ -1,7 +1,8 @@
 import { createServer } from "node:http";
 import { createPublicKey, verify } from "node:crypto";
 
-const PUBLIC_KEY = process.env.TELNYX_PUBLIC_KEY ?? "vFo7HklfxvOg1ZGaqxqYDtmyZhfsl5IQLR6t3JhDtaU=";
+const PUBLIC_KEY = process.env.TELNYX_PUBLIC_KEY;
+if (!PUBLIC_KEY) throw new Error("TELNYX_PUBLIC_KEY missing");
 const PORT = 3100;
 
 function rawKeyToSpkiDer(rawKey32: Buffer): Buffer {

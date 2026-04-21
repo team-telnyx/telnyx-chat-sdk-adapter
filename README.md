@@ -63,7 +63,7 @@ See [examples/basic](./examples/basic) for a full runnable server.
 |----------|----------|-------------|
 | `TELNYX_API_KEY` | Yes | Telnyx API key (overridden by `config.apiKey`) |
 | `TELNYX_FROM_NUMBER` | Yes | E.164 phone number you send from, e.g. `+15551234567` (overridden by `config.phoneNumber`) |
-| `TELNYX_PUBLIC_KEY` | Recommended | Ed25519 public key in hex for webhook verification (overridden by `config.publicKey`). If unset, webhook signatures are not verified — do not run that way in production. |
+| `TELNYX_PUBLIC_KEY` | Recommended | Ed25519 public key for webhook verification. Accepts either the base64 form shown in Mission Control or a 64-char hex form — the adapter auto-detects. Overridden by `config.publicKey`. If unset, webhook signatures are not verified — do not run that way in production. |
 | `BOT_USERNAME` | No | Bot display name. Defaults to `"bot"` (overridden by `config.userName`). |
 
 ### `TelnyxAdapterConfig`
@@ -74,7 +74,7 @@ interface TelnyxAdapterConfig {
   apiKey?: string;
   /** Telnyx phone number to send from (E.164). Defaults to TELNYX_FROM_NUMBER env var. */
   phoneNumber?: string;
-  /** Ed25519 public key (hex) for webhook signature verification. Defaults to TELNYX_PUBLIC_KEY env var. */
+  /** Ed25519 public key for webhook signature verification (base64 or hex — auto-detected). Defaults to TELNYX_PUBLIC_KEY env var. */
   publicKey?: string;
   /** Telnyx messaging profile ID. Optional, but strongly recommended — see below. */
   messagingProfileId?: string;
@@ -117,12 +117,21 @@ The adapter attaches `messaging_profile_id` to every outbound request when this 
 | Edit / delete | No | `NotImplementedError`; SMS messages are immutable once delivered |
 | Message history | No | Telnyx has no thread-based history API; rely on the Chat SDK state adapter |
 
-## Attribution Tags
+## Attribution
 
-Outbound messages include `tags: ["vercel-chat-sdk", "vercel-chat-sdk:<version>"]` so the Vercel and Telnyx teams can measure ecosystem adoption of the Chat SDK. The package also advertises itself in the `User-Agent` header on outbound API calls.
+The adapter advertises itself in three places so ecosystem usage is observable:
 
-- User-supplied tags passed through `extraTags` are merged after the attribution tags.
-- To opt out of the attribution tags entirely, set `disableAttributionTags: true`. `extraTags` still applies.
+1. **`User-Agent` header** on every outbound API call: `@telnyx/chat-sdk-adapter/<version> (vercel-chat-sdk)`.
+2. **`tags` on every outbound message**: `["vercel-chat-sdk", "vercel-chat-sdk:<version>"]`, merged with any user-supplied tags.
+3. **Dedicated Messaging Profile convention** (see the section above) — the primary attribution signal for Telnyx-side usage analytics.
+
+### Where tags show up on Telnyx
+
+Attribution tags are visible in Telnyx webhook event payloads (`message.sent`, `message.finalized`, `message.received`) in the `data.payload.tags` field. They are accepted by `POST /v2/messages` but are **not** surfaced in the `GET /v2/messages/{id}` response. Tag-based attribution is therefore a webhook/event-stream signal, not a lookup-API signal.
+
+### Merging and opting out
+
+User-supplied tags are merged after the attribution tags. To opt out of attribution tags entirely, set `disableAttributionTags: true`; `extraTags` is unaffected.
 
 ```ts
 const telnyx = createTelnyxAdapter({
@@ -147,7 +156,7 @@ import {
 1. Open the [Telnyx Mission Control portal](https://portal.telnyx.com/#/messaging) and navigate to the messaging profile you created for the bot.
 2. In **Inbound Settings**, set the **Webhook URL** to your server's webhook endpoint (for example, `https://bot.example.com/api/webhooks/telnyx`).
 3. Set **Webhook API version** to `2`.
-4. Under **Messaging** -> **Security**, copy the **Public Key** for the profile and set it as `TELNYX_PUBLIC_KEY` (or pass it as `publicKey`). This is the key the adapter uses to verify incoming webhook signatures.
+4. Under **Messaging** -> **Security**, copy the **Public Key** for the profile and set it as `TELNYX_PUBLIC_KEY` (or pass it as `publicKey`). Telnyx shows this key in base64; the adapter accepts it as-is. This is the key the adapter uses to verify incoming webhook signatures.
 5. Assign one or more phone numbers to the profile. The number you set as `TELNYX_FROM_NUMBER` must belong to this profile.
 
 Incoming webhooks are validated against the `telnyx-signature-ed25519` and `telnyx-timestamp` headers. Requests with a timestamp older than 300 seconds, or with an invalid signature, are rejected with `401`.

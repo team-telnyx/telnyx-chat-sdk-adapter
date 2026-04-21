@@ -2,9 +2,12 @@ import { createTelnyxAdapter } from "../src/factory";
 import { ADAPTER_MARKER, ADAPTER_VERSION } from "../src/attribution";
 import { telnyx } from "./telnyx-http";
 
-const FROM = process.env.TELNYX_FROM_NUMBER ?? "+12056348076";
-const TO = process.env.TEST_TO_NUMBER ?? "+353857688030";
-const PROFILE = process.env.TELNYX_PROFILE_ID ?? "40019dac-b5b6-4851-ab60-fae35acc7218";
+const FROM = process.env.TELNYX_FROM_NUMBER;
+const TO = process.env.TEST_TO_NUMBER;
+const PROFILE = process.env.TELNYX_PROFILE_ID;
+if (!(FROM && TO && PROFILE)) {
+  throw new Error("Set TELNYX_FROM_NUMBER, TEST_TO_NUMBER, and TELNYX_PROFILE_ID");
+}
 
 async function main() {
   console.log(`Sending E2E test SMS: ${FROM} → ${TO}`);

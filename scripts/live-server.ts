@@ -3,10 +3,13 @@ import { createMemoryState } from "@chat-adapter/state-memory";
 import { Chat } from "chat";
 import { createTelnyxAdapter } from "../src/factory";
 
-const FROM = process.env.TELNYX_FROM_NUMBER ?? "+12056348076";
-const PROFILE = process.env.TELNYX_PROFILE_ID ?? "40019dac-b5b6-4851-ab60-fae35acc7218";
-const PUBLIC_KEY = process.env.TELNYX_PUBLIC_KEY ?? "vFo7HklfxvOg1ZGaqxqYDtmyZhfsl5IQLR6t3JhDtaU=";
+const FROM = process.env.TELNYX_FROM_NUMBER;
+const PROFILE = process.env.TELNYX_PROFILE_ID;
+const PUBLIC_KEY = process.env.TELNYX_PUBLIC_KEY;
 const PORT = Number(process.env.PORT ?? 3100);
+if (!(FROM && PROFILE && PUBLIC_KEY)) {
+  throw new Error("Set TELNYX_FROM_NUMBER, TELNYX_PROFILE_ID, and TELNYX_PUBLIC_KEY");
+}
 
 const telnyx = createTelnyxAdapter({
   phoneNumber: FROM,
