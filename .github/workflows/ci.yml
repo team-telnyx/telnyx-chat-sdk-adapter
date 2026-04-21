@@ -45,6 +45,10 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      # OIDC trusted publisher is configured on npmjs.com for this package,
+      # so `pnpm publish` (invoked by `pnpm release` -> `changeset publish`)
+      # uses the GitHub Actions OIDC token minted via `id-token: write` above.
+      # No long-lived NPM_TOKEN secret is required.
       - uses: changesets/action@v1
         with:
           publish: pnpm release
@@ -52,4 +56,3 @@ jobs:
           commit: "chore: release @telnyx/chat-sdk-adapter"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
