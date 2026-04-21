@@ -1,6 +1,6 @@
 {
   "name": "@telnyx/chat-sdk-adapter",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Vercel Chat SDK adapter for Telnyx SMS/MMS",
   "author": "Telnyx",
   "license": "MIT",
