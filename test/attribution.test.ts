@@ -42,22 +42,28 @@ describe("attribution", () => {
       expect(ADAPTER_NAME).toBe("@telnyx/chat-sdk-adapter");
     });
 
-    it("exposes the expected adapter version", () => {
-      expect(ADAPTER_VERSION).toBe("0.1.0");
+    it("exposes the adapter version as a semver string", () => {
+      expect(ADAPTER_VERSION).toMatch(/^\d+\.\d+\.\d+/);
     });
 
     it("builds the expected User-Agent string", () => {
-      expect(USER_AGENT).toBe("@telnyx/chat-sdk-adapter/0.1.0 (vercel-chat-sdk)");
+      expect(USER_AGENT).toBe(`@telnyx/chat-sdk-adapter/${ADAPTER_VERSION} (vercel-chat-sdk)`);
     });
 
     it("defines the attribution tags", () => {
-      expect([...ATTRIBUTION_TAGS]).toEqual(["vercel-chat-sdk", "vercel-chat-sdk:0.1.0"]);
+      expect([...ATTRIBUTION_TAGS]).toEqual([
+        "vercel-chat-sdk",
+        `vercel-chat-sdk:${ADAPTER_VERSION}`,
+      ]);
     });
   });
 
   describe("buildTags", () => {
     it("returns only attribution tags when no user tags and attribution enabled", () => {
-      expect(buildTags([], false)).toEqual(["vercel-chat-sdk", "vercel-chat-sdk:0.1.0"]);
+      expect(buildTags([], false)).toEqual([
+        "vercel-chat-sdk",
+        `vercel-chat-sdk:${ADAPTER_VERSION}`,
+      ]);
     });
 
     it("returns empty array when attribution disabled and no user tags", () => {
@@ -71,7 +77,7 @@ describe("attribution", () => {
     it("merges attribution tags with user tags", () => {
       expect(buildTags(["customer-123", "prod"], false)).toEqual([
         "vercel-chat-sdk",
-        "vercel-chat-sdk:0.1.0",
+        `vercel-chat-sdk:${ADAPTER_VERSION}`,
         "customer-123",
         "prod",
       ]);
@@ -94,7 +100,7 @@ describe("attribution", () => {
 
       const [, init] = mockFetch.mock.calls[0];
       const body = JSON.parse(init?.body as string);
-      expect(body.tags).toEqual(["vercel-chat-sdk", "vercel-chat-sdk:0.1.0"]);
+      expect(body.tags).toEqual(["vercel-chat-sdk", `vercel-chat-sdk:${ADAPTER_VERSION}`]);
     });
 
     it("merges extraTags with default attribution tags", async () => {
@@ -115,7 +121,7 @@ describe("attribution", () => {
       const body = JSON.parse(init?.body as string);
       expect(body.tags).toEqual([
         "vercel-chat-sdk",
-        "vercel-chat-sdk:0.1.0",
+        `vercel-chat-sdk:${ADAPTER_VERSION}`,
         "customer-123",
         "prod",
       ]);
@@ -179,7 +185,9 @@ describe("attribution", () => {
       expect(url).toBe("https://api.telnyx.com/v2/messages");
 
       const headers = new Headers(init?.headers as HeadersInit | undefined);
-      expect(headers.get("user-agent")).toBe("@telnyx/chat-sdk-adapter/0.1.0 (vercel-chat-sdk)");
+      expect(headers.get("user-agent")).toBe(
+        `@telnyx/chat-sdk-adapter/${ADAPTER_VERSION} (vercel-chat-sdk)`,
+      );
     });
   });
 });
