@@ -274,6 +274,41 @@ describe("TelnyxAdapter", () => {
         AuthenticationError,
       );
     });
+
+    it("throws AuthenticationError on 403 with parsed Telnyx error detail", async () => {
+      const adapter = new TelnyxAdapter({
+        apiKey: "revoked-key",
+        phoneNumber: "+15559876543",
+        logger: mockLogger,
+      });
+      const chat = createMockChat();
+      await adapter.initialize(chat);
+
+      mockFetch.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            errors: [
+              {
+                code: "10008",
+                title: "Forbidden",
+                detail: "API key is revoked",
+              },
+            ],
+          }),
+          { status: 403, headers: { "content-type": "application/json" } },
+        ),
+      );
+
+      try {
+        await adapter.postMessage("telnyx:+15559876543:+15551234567", "test");
+        expect.fail("expected AuthenticationError");
+      } catch (error) {
+        expect(error).toBeInstanceOf(AuthenticationError);
+        expect((error as Error).message).toContain("Forbidden");
+        expect((error as Error).message).toContain("API key is revoked");
+        expect((error as Error).message).toContain("10008");
+      }
+    });
   });
 
   describe("editMessage / deleteMessage / addReaction / removeReaction", () => {
@@ -411,6 +446,36 @@ describe("TelnyxAdapter", () => {
 
       expect(message.author.isMe).toBe(true);
       expect(message.author.isBot).toBe(true);
+    });
+
+    it("builds the same thread ID for inbound and outbound messages in the same conversation", () => {
+      const adapter = new TelnyxAdapter({
+        apiKey: "test-key",
+        phoneNumber: "+15559876543",
+        logger: mockLogger,
+      });
+
+      const inbound = adapter.parseMessage({
+        id: "msg-in",
+        text: "hi",
+        from: { phone_number: "+15551234567" },
+        to: [{ phone_number: "+15559876543" }],
+        direction: "inbound",
+        type: "SMS",
+      });
+
+      const outbound = adapter.parseMessage({
+        id: "msg-out",
+        text: "hello",
+        from: { phone_number: "+15559876543" },
+        to: [{ phone_number: "+15551234567" }],
+        direction: "outbound",
+        type: "SMS",
+      });
+
+      expect(inbound.threadId).toBe("telnyx:+15559876543:+15551234567");
+      expect(outbound.threadId).toBe("telnyx:+15559876543:+15551234567");
+      expect(inbound.threadId).toBe(outbound.threadId);
     });
 
     it("sets isMention true for inbound messages", () => {

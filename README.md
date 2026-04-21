@@ -1,11 +1,21 @@
 # @telnyx/chat-sdk-adapter
 
+[![npm version](https://img.shields.io/npm/v/@telnyx/chat-sdk-adapter.svg)](https://www.npmjs.com/package/@telnyx/chat-sdk-adapter)
+[![npm downloads](https://img.shields.io/npm/dm/@telnyx/chat-sdk-adapter.svg)](https://www.npmjs.com/package/@telnyx/chat-sdk-adapter)
+[![license](https://img.shields.io/npm/l/@telnyx/chat-sdk-adapter.svg)](./LICENSE)
+
 Vercel Chat SDK adapter for [Telnyx](https://telnyx.com) SMS/MMS. Bidirectional: receive messages via Telnyx webhooks (Ed25519-verified), send messages via the Telnyx Messaging API.
 
 ## Install
 
 ```bash
-pnpm add @telnyx/chat-sdk-adapter chat @chat-adapter/shared
+pnpm add @telnyx/chat-sdk-adapter chat
+```
+
+Also install a state adapter — `@chat-adapter/state-memory` for dev, `@chat-adapter/state-redis` for production:
+
+```bash
+pnpm add @chat-adapter/state-memory
 ```
 
 Requires Node.js `>=18`.

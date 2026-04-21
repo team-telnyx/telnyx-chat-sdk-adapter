@@ -1,5 +1,5 @@
-import { createTelnyxAdapter } from "../src/factory";
 import { ADAPTER_MARKER, ADAPTER_VERSION } from "../src/attribution";
+import { createTelnyxAdapter } from "../src/factory";
 import { telnyx } from "./telnyx-http";
 
 const FROM = process.env.TELNYX_FROM_NUMBER;

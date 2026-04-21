@@ -1,5 +1,5 @@
-import { createServer } from "node:http";
 import { createPublicKey, verify } from "node:crypto";
+import { createServer } from "node:http";
 
 const PUBLIC_KEY = process.env.TELNYX_PUBLIC_KEY;
 if (!PUBLIC_KEY) throw new Error("TELNYX_PUBLIC_KEY missing");
@@ -39,7 +39,9 @@ const server = createServer((req, res) => {
     console.log(`  sig length bytes: ${sig.length}`);
     console.log(`  body length:      ${raw.length}`);
     console.log(`  body first 120:   ${raw.subarray(0, 120).toString("utf8")}`);
-    console.log(`  body last 60:     ${raw.subarray(Math.max(0, raw.length - 60)).toString("utf8")}`);
+    console.log(
+      `  body last 60:     ${raw.subarray(Math.max(0, raw.length - 60)).toString("utf8")}`,
+    );
     console.log(`\n  --- signature attempts ---`);
 
     tryVerify("timestamp + body            ", Buffer.concat([Buffer.from(ts), raw]), sig);

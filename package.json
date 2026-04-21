@@ -50,14 +50,15 @@
     "version": "changeset version",
     "release": "pnpm build && changeset publish"
   },
+  "dependencies": {
+    "@chat-adapter/shared": "^4.20.0"
+  },
   "peerDependencies": {
-    "@chat-adapter/shared": "^4.20.0",
     "chat": "^4.20.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.4",
+    "@biomejs/biome": "^2.4.12",
     "@changesets/cli": "^2.29.8",
-    "@chat-adapter/shared": "^4.20.0",
     "@chat-adapter/state-memory": "^4.26.0",
     "@types/node": "^22.0.0",
     "@vitest/coverage-v8": "^2.1.8",
