@@ -255,8 +255,8 @@ export class TelnyxAdapter implements Adapter<TelnyxThreadId, TelnyxRawMessage> 
     }
 
     const threadId = this.encodeThreadId({
-      telnyxNumber: raw.to[0]?.phone_number ?? this.phoneNumber,
-      recipientNumber: isMe ? (raw.to[0]?.phone_number ?? this.phoneNumber) : fromNumber,
+      telnyxNumber: isMe ? this.phoneNumber : (raw.to[0]?.phone_number ?? this.phoneNumber),
+      recipientNumber: isMe ? (raw.to[0]?.phone_number ?? fromNumber) : fromNumber,
     });
 
     return new Message<TelnyxRawMessage>({
@@ -399,10 +399,13 @@ function hexToUint8Array(hex: string): Uint8Array<ArrayBuffer> {
 // Telnyx returns the webhook public key in base64 (~44 chars).
 // Accept hex too so keys copied from other docs just work.
 function decodePublicKey(key: string): Uint8Array<ArrayBuffer> {
-  if (/^[0-9a-fA-F]+$/.test(key) && key.length === 64) {
-    return hexToUint8Array(key);
+  const bytes = /^[0-9a-fA-F]{64}$/.test(key) ? hexToUint8Array(key) : base64ToUint8Array(key);
+  if (bytes.length !== 32) {
+    throw new Error(
+      `Ed25519 public key must decode to exactly 32 bytes (got ${bytes.length}); check TELNYX_PUBLIC_KEY`,
+    );
   }
-  return base64ToUint8Array(key);
+  return bytes;
 }
 
 function base64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {

@@ -1,5 +1,10 @@
+import { createRequire } from "node:module";
+
 export const ADAPTER_NAME = "@telnyx/chat-sdk-adapter";
-export const ADAPTER_VERSION = "0.1.0";
+
+const pkg = createRequire(import.meta.url)("../package.json") as { version: string };
+export const ADAPTER_VERSION = pkg.version;
+
 export const ADAPTER_MARKER = "vercel-chat-sdk";
 export const USER_AGENT = `${ADAPTER_NAME}/${ADAPTER_VERSION} (${ADAPTER_MARKER})`;
 export const ATTRIBUTION_TAGS: readonly string[] = [

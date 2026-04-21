@@ -8,8 +8,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@telnyx/chat-sdk-adapter": "file:../../telnyx-chat-sdk-adapter-0.1.0.tgz",
     "@chat-adapter/state-memory": "^4.20.0",
+    "@telnyx/chat-sdk-adapter": "file:../..",
     "chat": "^4.20.0"
   },
   "devDependencies": {

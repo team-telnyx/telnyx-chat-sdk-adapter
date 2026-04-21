@@ -1,5 +1,5 @@
 import { generateKeyPairSync, sign } from "node:crypto";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { TelnyxAdapter } from "../src/adapter";
 import { createMockChat, mockLogger, sampleWebhookPayload } from "./fixtures/webhook-payloads";
 

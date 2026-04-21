@@ -24,7 +24,9 @@ async function main() {
 
   console.log("=== MESSAGING PROFILES ===");
   for (const p of profilesRes.data) {
-    console.log(`  ${p.id}  enabled=${p.enabled}  webhook=${p.webhook_url ?? "(none)"}  name="${p.name}"`);
+    console.log(
+      `  ${p.id}  enabled=${p.enabled}  webhook=${p.webhook_url ?? "(none)"}  name="${p.name}"`,
+    );
   }
 
   console.log("\n=== MESSAGING PHONE NUMBERS ===");

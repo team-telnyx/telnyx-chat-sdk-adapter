@@ -23,34 +23,34 @@ async function main() {
   const profileName = "[Chat SDK] E2E Test";
   console.log(`Looking for existing profile "${profileName}"...`);
 
-  const profileList = (await telnyx.get<{ data: Profile[] }>(
-    `/messaging_profiles?page[size]=250`,
-  )).data;
+  const profileList = (await telnyx.get<{ data: Profile[] }>(`/messaging_profiles?page[size]=250`))
+    .data;
   let profile = profileList.find((p) => p.name === profileName);
 
   if (profile) {
     console.log(`Found: ${profile.id}`);
     console.log(`Updating webhook_url to ${webhookUrl}`);
-    const updated = (await telnyx.patch<{ data: Profile }>(
-      `/messaging_profiles/${profile.id}`,
-      {
+    const updated = (
+      await telnyx.patch<{ data: Profile }>(`/messaging_profiles/${profile.id}`, {
         name: profileName,
         enabled: true,
         webhook_url: webhookUrl,
         webhook_api_version: "2",
         whitelisted_destinations: ["US", "IE"],
-      },
-    )).data;
+      })
+    ).data;
     profile = updated;
   } else {
     console.log(`Creating new profile...`);
-    const created = (await telnyx.post<{ data: Profile }>("/messaging_profiles", {
-      name: profileName,
-      enabled: true,
-      webhook_url: webhookUrl,
-      webhook_api_version: "2",
-      whitelisted_destinations: ["US", "IE"],
-    })).data;
+    const created = (
+      await telnyx.post<{ data: Profile }>("/messaging_profiles", {
+        name: profileName,
+        enabled: true,
+        webhook_url: webhookUrl,
+        webhook_api_version: "2",
+        whitelisted_destinations: ["US", "IE"],
+      })
+    ).data;
     profile = created;
     console.log(`Created: ${profile.id}`);
   }
@@ -60,12 +60,11 @@ async function main() {
   console.log(`  whitelisted: ${profile.whitelisted_destinations.join(", ")}`);
 
   console.log(`\nFinding an unassigned messaging-capable number...`);
-  const numbers = (await telnyx.get<{ data: Number[] }>(
-    `/messaging_phone_numbers?page[size]=50`,
-  )).data;
+  const numbers = (await telnyx.get<{ data: Number[] }>(`/messaging_phone_numbers?page[size]=50`))
+    .data;
 
   const alreadyOn = numbers.find((n) => n.messaging_profile_id === profile.id);
-  let chosen = alreadyOn ?? numbers.find((n) => !n.messaging_profile_id);
+  const chosen = alreadyOn ?? numbers.find((n) => !n.messaging_profile_id);
 
   if (!chosen) {
     throw new Error("No available messaging number found on account");
