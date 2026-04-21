@@ -187,9 +187,6 @@ Incoming webhooks are validated against the `telnyx-signature-ed25519` and `teln
 - **SMS length cap.** Outbound text is truncated at 1600 characters before being handed to Telnyx, which will segment it into concatenated SMS parts.
 - **Webhook verification is skipped when `publicKey` is unset.** Set it in production.
 
-## Credits
-
-Originally prototyped by Hayden Bleasel ([@haydenbleasel](https://github.com/haydenbleasel)) in [vercel/chat#198](https://github.com/vercel/chat/pull/198); thanks to Vercel for the Chat SDK.
 
 ## License
 
